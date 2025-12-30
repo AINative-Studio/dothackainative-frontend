@@ -135,6 +135,39 @@ export class ZeroDBClient {
       }
     }
   }
+
+  async search(request: SearchRequest): Promise<SearchResponse> {
+    const url = `${this.baseUrl}/${this.projectId}/embeddings/search`
+
+    const payload = {
+      query: request.query,
+      namespace: request.namespace,
+      limit: request.limit || 10,
+      similarity_threshold: request.similarity_threshold || 0.7,
+      filter: request.filter
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('ZeroDB search error:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
 }
 
 export interface EmbeddingDocument {
@@ -152,6 +185,27 @@ export interface EmbedAndStoreRequest {
 export interface EmbedAndStoreResponse {
   success: boolean
   embedding_ids?: string[]
+  error?: string
+}
+
+export interface SearchRequest {
+  query: string
+  namespace: string
+  limit?: number
+  similarity_threshold?: number
+  filter?: Record<string, any>
+}
+
+export interface SearchResult {
+  id: string
+  text: string
+  metadata: Record<string, any>
+  score: number
+}
+
+export interface SearchResponse {
+  success: boolean
+  results?: SearchResult[]
   error?: string
 }
 

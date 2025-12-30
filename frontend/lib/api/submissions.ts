@@ -1,4 +1,4 @@
-import { zeroDBClient } from '../zerodb'
+import { zeroDBClient, type SearchResult } from '../zerodb'
 import type { Submission } from '../types'
 
 export interface ArtifactLink {
@@ -134,4 +134,41 @@ export async function createSubmissionWithEmbedding(
     console.error('Failed to store embedding:', error)
     throw error
   }
+}
+
+export interface SearchSubmissionsParams {
+  query: string
+  hackathon_id: string
+  track_id?: string
+  team_id?: string
+  limit?: number
+  similarity_threshold?: number
+}
+
+export async function searchSubmissions(params: SearchSubmissionsParams): Promise<SearchResult[]> {
+  const namespace = generateSubmissionNamespace(params.hackathon_id)
+
+  const filter: Record<string, any> = {}
+
+  if (params.track_id) {
+    filter.track_id = params.track_id
+  }
+
+  if (params.team_id) {
+    filter.team_id = params.team_id
+  }
+
+  const response = await zeroDBClient.search({
+    query: params.query,
+    namespace,
+    limit: params.limit || 10,
+    similarity_threshold: params.similarity_threshold || 0.7,
+    filter: Object.keys(filter).length > 0 ? filter : undefined
+  })
+
+  if (!response.success) {
+    throw new Error(response.error || 'Failed to search submissions')
+  }
+
+  return response.results || []
 }

@@ -1,21 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
 import type { Submission } from '../lib/types'
+import type { SearchResult } from '../lib/zerodb'
 import {
   createSubmission,
   createSubmissionWithEmbedding,
   listSubmissions,
   getSubmissionsByHackathon,
   getSubmissionByProject,
+  searchSubmissions,
   parseArtifactLinks,
   type CreateSubmissionInput,
   type ListSubmissionsParams,
   type ArtifactLink,
-  type SubmissionEmbeddingMetadata
+  type SubmissionEmbeddingMetadata,
+  type SearchSubmissionsParams
 } from '../lib/api/submissions'
 
 export const SUBMISSIONS_QUERY_KEY = 'submissions'
+export const SUBMISSION_SEARCH_QUERY_KEY = 'submission_search'
 
-export { parseArtifactLinks, type ArtifactLink, type SubmissionEmbeddingMetadata }
+export { parseArtifactLinks, type ArtifactLink, type SubmissionEmbeddingMetadata, type SearchResult }
 
 export function useSubmissions(params: ListSubmissionsParams = {}) {
   return useQuery({
@@ -69,4 +74,29 @@ export function useCreateSubmissionWithEmbedding() {
       })
     }
   })
+}
+
+export function useSearchSubmissions(params: Omit<SearchSubmissionsParams, 'query'>) {
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [query, setQuery] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [query])
+
+  const searchQuery = useQuery({
+    queryKey: [SUBMISSION_SEARCH_QUERY_KEY, { ...params, query: debouncedQuery }],
+    queryFn: () => searchSubmissions({ ...params, query: debouncedQuery }),
+    enabled: !!params.hackathon_id && debouncedQuery.length >= 3
+  })
+
+  return {
+    ...searchQuery,
+    query,
+    setQuery
+  }
 }
