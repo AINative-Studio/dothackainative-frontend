@@ -1,38 +1,34 @@
-# ZeroDB PostgreSQL Status
+---
+description: Check the status of your dedicated PostgreSQL instance
+---
 
-Check the operational status of your PostgreSQL instance.
+Get detailed status and metrics for your PostgreSQL instance using the ZeroDB MCP server.
 
-## Tool
+**MCP Tool:**
+```
+zerodb_get_postgres_status
+```
 
-`zerodb_get_postgres_status`
+**Parameters:**
+- `project_id` (required): Your ZeroDB project ID
 
-## Required Parameters
-
-- **project_id**: Your ZeroDB project ID
-
-## Information Returned
-
-### Instance Status
-- **provisioning**: Being created (2-3 minutes)
-- **active**: Running and accepting connections
-- **maintenance**: Scheduled maintenance in progress
-- **error**: Problem occurred (see error_message)
-
-### Performance Metrics
-- CPU usage
-- Memory usage
-- Storage usage
-- Active connections
-
-### Financial Data
-- Billing period
-- Monthly cost
-- Instance tier
-
-### System Health
+**Returns:**
+- Status: provisioning, active, maintenance, error
+- Resource usage: CPU, memory, storage
+- Connection count and performance metrics
+- Billing information and monthly cost
 - Health check status
-- Last check timestamp
+- Last health check timestamp
 
-## Example
+**Instance States:**
+- **provisioning**: Instance is being created (typically 2-3 minutes)
+- **active**: Instance is running and ready for connections
+- **maintenance**: Scheduled maintenance in progress
+- **error**: Issue with the instance (check error_message field)
 
-Monitor instance health and resource utilization.
+**Example:**
+```javascript
+{
+  "project_id": "your-project-id"
+}
+```

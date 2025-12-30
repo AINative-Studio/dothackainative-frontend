@@ -1,28 +1,19 @@
-# Hybrid Quantum-Classical Vector Search
+---
+description: Hybrid quantum-classical vector search
+---
 
-Enhanced semantic search combining quantum and classical computing.
+Use the mcp__ainative-zerodb__zerodb_quantum_hybrid_search tool for enhanced semantic search.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_quantum_hybrid_search`
-
-## Use Cases
-
-- Advanced semantic search
+Example usage:
+- Advanced similarity search
 - Quantum-enhanced vector matching
-- Combined quantum/classical results
+- Balanced classical/quantum results
 
-## Required Parameters
+Key parameters:
+- query_vector: Query vector array (required)
+- limit: Maximum results (default: 10)
+- classical_weight: Classical similarity weight 0-1 (default: 0.7)
+- quantum_weight: Quantum similarity weight 0-1 (default: 0.3)
+- namespace: Vector namespace (optional)
 
-- **query_vector**: The search vector array
-
-## Optional Parameters
-
-- **limit** (optional): Result count (default: 10)
-- **classical_weight** (optional): Classical similarity weight 0-1 (default: 0.7)
-- **quantum_weight** (optional): Quantum similarity weight 0-1 (default: 0.3)
-- **namespace** (optional): Vector namespace
-
-## Example
-
-Perform quantum-enhanced search with custom weighting.
+Ask the user for their search query, then use the tool for quantum-enhanced search.

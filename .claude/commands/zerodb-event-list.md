@@ -1,27 +1,20 @@
-# ZeroDB Event Stream Query
+---
+description: List events from ZeroDB event stream
+---
 
-Query events from a ZeroDB event stream with filtering options.
+Use the mcp__ainative-zerodb__zerodb_list_events tool to query events.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_list_events`
-
-## Use Cases
-
+Example usage:
 - View event history
 - Filter by type or source
 - Query time ranges
-- Monitor workflows
 
-## Parameters
+Key parameters:
+- event_type: Filter by event type (optional)
+- source: Filter by source (optional)
+- start_time: ISO timestamp - events after this time (optional)
+- end_time: ISO timestamp - events before this time (optional)
+- limit: Maximum results (default: 100)
+- offset: Pagination offset (default: 0)
 
-- **event_type** (optional): Filter by event category
-- **source** (optional): Filter by origin
-- **start_time** (optional): ISO timestamp
-- **end_time** (optional): ISO timestamp
-- **limit** (optional): Results to return (default: 100)
-- **offset** (optional): Pagination offset (default: 0)
-
-## Example
-
-Query events with filters to view the event stream.
+Use this tool to show the user their events.

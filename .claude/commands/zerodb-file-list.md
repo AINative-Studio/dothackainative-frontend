@@ -1,25 +1,18 @@
-# ZeroDB File Listing
+---
+description: List files in ZeroDB storage
+---
 
-Browse files stored in ZeroDB.
+Use the mcp__ainative-zerodb__zerodb_list_files tool to browse stored files.
 
-## Tool
+Example usage:
+- View all uploaded files
+- Filter by folder or content type
+- Paginate through file listings
 
-`mcp__ainative-zerodb__zerodb_list_files`
+Key parameters:
+- folder: Filter by folder path (optional)
+- content_type: Filter by MIME type (optional)
+- limit: Maximum results (default: 100)
+- offset: Pagination offset (default: 0)
 
-## Use Cases
-
-- View stored files
-- Filter by folder
-- Filter by content type
-- Organize documents
-
-## Parameters
-
-- **folder** (optional): Filter by folder path
-- **content_type** (optional): Filter by MIME type
-- **limit** (optional): Results to return (default: 100)
-- **offset** (optional): Pagination offset (default: 0)
-
-## Example
-
-List files with optional folder and content type filters.
+Use this tool to show the user their stored files.

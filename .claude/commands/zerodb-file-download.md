@@ -1,25 +1,16 @@
-# ZeroDB File Download
+---
+description: Download a file from ZeroDB storage
+---
 
-Retrieve file contents from ZeroDB storage.
+Use the mcp__ainative-zerodb__zerodb_download_file tool to retrieve stored files.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_download_file`
-
-## Use Cases
-
-- Retrieve stored files
+Example usage:
+- Download files by ID
 - Get base64-encoded content
-- Access file metadata
+- Retrieve file metadata and content
 
-## Required Parameters
+Key parameters:
+- file_id: File ID to download (required)
+- return_base64: Return as base64 string (default: true)
 
-- **file_id**: The file identifier
-
-## Optional Parameters
-
-- **as_base64** (optional): Return base64-encoded content (default: true)
-
-## Example
-
-Ask the user which file to download, then fetch it using the file ID.
+Ask the user which file to download, then use the tool to retrieve it.

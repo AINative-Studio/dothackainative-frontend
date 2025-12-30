@@ -1,24 +1,18 @@
-# ZeroDB Vector Listing
+---
+description: List vectors in ZeroDB project with pagination
+---
 
-Browse and manage stored vectors.
+Use the mcp__ainative-zerodb__zerodb_list_vectors tool to list all vectors in a project or namespace.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_list_vectors`
-
-## Use Cases
-
-- View all vectors in project/namespace
+Example usage:
+- Browse all stored vectors
 - Filter by metadata
-- Paginate through large collections
+- Paginate through large vector collections
 
-## Parameters
+Key parameters:
+- namespace: Filter by namespace (optional)
+- limit: Results per page (default: 100)
+- offset: Pagination offset (default: 0)
+- filter_metadata: Filter by metadata fields (optional)
 
-- **namespace** (optional): Scope to specific namespace
-- **limit** (optional): Results per page (default: 100)
-- **offset** (optional): Pagination offset (default: 0)
-- **filter_metadata** (optional): Metadata filters (object)
-
-## Example
-
-Display stored vectors with optional filtering.
+Use this tool to show the user their stored vectors.

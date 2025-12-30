@@ -1,17 +1,15 @@
-# ZeroDB Help
+---
+description: Show ZeroDB MCP server help and available commands
+---
 
-Get comprehensive help and documentation for ZeroDB MCP server commands.
+Display the comprehensive ZeroDB guide from ZERODB-GUIDE.md.
 
-## Purpose
-
-Display available commands, usage examples, and best practices for using ZeroDB.
-
-## Contents
-
+The guide includes:
 - Overview of ZeroDB capabilities
-- List of all available commands
-- Common workflows
+- All available slash commands
+- Common workflows and use cases
+- Direct tool usage reference
 - Authentication setup
-- Best practices
+- Best practices and tips
 
-Refer to ZERODB-GUIDE.md for complete documentation.
+Read and display the ZERODB-GUIDE.md file to help the user understand how to use ZeroDB.

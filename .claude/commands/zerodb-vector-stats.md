@@ -1,22 +1,16 @@
-# ZeroDB Vector Statistics
+---
+description: Get vector statistics for ZeroDB project
+---
 
-Get vector metrics for your project.
+Use the mcp__ainative-zerodb__zerodb_vector_stats tool to get statistics about vectors in the project.
 
-## Tool
+Example usage:
+- Check total vector count
+- View namespace distribution
+- Get detailed storage metrics
 
-`mcp__ainative-zerodb__zerodb_vector_stats`
+Key parameters:
+- namespace: Filter by namespace (optional)
+- detailed: Include detailed statistics (default: false)
 
-## Use Cases
-
-- View total vector count
-- See namespace distribution
-- Access storage metrics
-
-## Parameters
-
-- **namespace** (optional): Filter to specific namespace
-- **detailed** (optional): Include extended statistics (default: false)
-
-## Example
-
-View vector storage insights.
+Use this tool to show the user statistics about their vector storage.

@@ -1,23 +1,17 @@
-# ZeroDB Project Statistics
+---
+description: Get ZeroDB project usage statistics
+---
 
-Get usage metrics for your ZeroDB project.
+Use the mcp__ainative-zerodb__zerodb_get_project_stats tool to view usage metrics.
 
-## Tool
+Example usage:
+- Check storage usage
+- View vector count
+- Monitor API usage
+- Track resource consumption
 
-`mcp__ainative-zerodb__zerodb_get_project_stats`
+Key parameters:
+- project_id: Project ID (optional, uses env default)
+- include_details: Include detailed breakdowns (default: true)
 
-## Use Cases
-
-- Monitor storage usage
-- Track vector counts
-- View API usage
-- Analyze resource consumption
-
-## Parameters
-
-- **project_id** (optional): Uses environment default if not specified
-- **include_details** (optional): Enable detailed breakdown (default: true)
-
-## Example
-
-View comprehensive project statistics.
+Use this tool to show the user their project statistics.

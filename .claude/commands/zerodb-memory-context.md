@@ -1,26 +1,17 @@
-# ZeroDB Agent Context Window
+---
+description: Get agent context window for current session
+---
 
-Retrieve agent context for the current session.
+Use the mcp__ainative-zerodb__zerodb_get_context tool to retrieve session context.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_get_context`
-
-## Use Cases
-
+Example usage:
 - Get conversation history
 - Load session context
 - Manage token limits
 
-## Required Parameters
+Key parameters:
+- session_id: Session identifier (required)
+- agent_id: Agent identifier (optional)
+- max_tokens: Maximum tokens in context (optional)
 
-- **session_id**: The session identifier
-
-## Optional Parameters
-
-- **agent_id** (optional): The agent identifier
-- **max_tokens** (optional): Maximum context window size
-
-## Example
-
-Ask for the session ID, then retrieve the context window.
+Ask the user for the session ID, then use the tool to get the context.

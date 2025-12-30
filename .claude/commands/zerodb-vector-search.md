@@ -1,28 +1,19 @@
-# ZeroDB Vector Search
+---
+description: Search for similar vectors in ZeroDB using semantic similarity
+---
 
-Find semantically similar vectors.
+Use the mcp__ainative-zerodb__zerodb_search_vectors tool to find vectors similar to a query vector.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_search_vectors`
-
-## Use Cases
-
-- Semantic search across embedded content
+Example usage:
 - Find similar documents or text chunks
-- RAG retrieval
+- Semantic search across embedded content
+- Filter results by metadata
 
-## Required Parameters
+Key parameters:
+- query_vector: Array of 1536 numbers (required)
+- limit: Maximum number of results (default: 10)
+- threshold: Similarity threshold 0-1 (default: 0.7)
+- namespace: Search within specific namespace (optional)
+- filter_metadata: Filter by metadata fields (optional)
 
-- **query_vector**: Array of 1536 numbers
-
-## Optional Parameters
-
-- **limit** (optional): Results to return (default: 10)
-- **threshold** (optional): Similarity threshold 0-1 (default: 0.7)
-- **namespace** (optional): Restrict to namespace
-- **filter_metadata** (optional): Metadata filters (object)
-
-## Example
-
-Ask for search requirements, then query vectors.
+Ask the user for their search requirements, then use the tool to execute the search.

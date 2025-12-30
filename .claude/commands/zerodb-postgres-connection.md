@@ -1,39 +1,39 @@
-# ZeroDB PostgreSQL Connection Details
+---
+description: Get connection details for your dedicated PostgreSQL instance
+---
 
-Get connection credentials for your dedicated PostgreSQL instance.
+Get direct connection credentials for your dedicated PostgreSQL instance using the ZeroDB MCP server.
 
-## Tool
-
-`zerodb_get_postgres_connection`
-
-## Required Parameters
-
-- **project_id**: Your ZeroDB project ID
-
-## Optional Parameters
-
-- **credential_type** (optional): "primary", "readonly", or "admin" (default: "primary")
-
-## Returns
-
-- Full connection string
-- Host, port, database name
-- Username and password
-- Credential type
-
-## Connection Methods
-
-Use with any PostgreSQL client:
-- Command-line: `psql`
-- Python: `psycopg2`, `SQLAlchemy`
-- Node.js: `pg`, `Sequelize`, `Prisma`
-- Any PostgreSQL-compatible ORM
-
-## Example
-
-Connect via URL:
-```bash
-psql "postgresql://user:pass@host:port/dbname"
+**MCP Tool:**
+```
+zerodb_get_postgres_connection
 ```
 
-Or use individual parameters with your database client.
+**Parameters:**
+- `project_id` (required): Your ZeroDB project ID
+- `credential_type` (optional): "primary" (default), "readonly", or "admin"
+
+**Returns:**
+- `database_url`: Full connection string
+- `host`, `port`, `database`: Individual connection parameters
+- `username`, `password`: Credentials for the specified type
+- `connection_string`: Ready-to-use connection string
+
+**Example:**
+```javascript
+{
+  "project_id": "your-project-id",
+  "credential_type": "primary"
+}
+```
+
+**Use with any PostgreSQL client:**
+```bash
+# Using psql
+psql postgresql://username:password@host:port/database
+
+# Using connection parameters
+psql -h host -p port -U username -d database
+```
+
+Works with Python (psycopg2), Node.js (pg), and any PostgreSQL-compatible ORM (SQLAlchemy, Sequelize, Prisma, etc.).

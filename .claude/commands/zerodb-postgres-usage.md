@@ -1,43 +1,34 @@
-# ZeroDB PostgreSQL Usage and Billing
+---
+description: Get usage statistics and billing for your PostgreSQL instance
+---
 
-View comprehensive usage metrics and billing information.
+View comprehensive usage metrics and billing information using the ZeroDB MCP server.
 
-## Tool
+**MCP Tool:**
+```
+zerodb_get_postgres_usage
+```
 
-`zerodb_get_postgres_usage`
+**Parameters:**
+- `project_id` (required): Your ZeroDB project ID
+- `hours` (optional): Time range in hours (default: 24)
 
-## Required Parameters
+**Returns:**
+- Total queries executed in time period
+- Total credits consumed
+- Average query execution time (milliseconds)
+- Top query types and patterns (SELECT, INSERT, UPDATE, DELETE)
+- Connection utilization metrics
+- Storage usage (GB)
+- Estimated monthly cost (USD)
 
-- **project_id**: Your ZeroDB project ID
-
-## Optional Parameters
-
-- **hours** (optional): Time window in hours (default: 24)
-
-## Metrics Returned
-
-- Total queries executed
-- Credits consumed
-- Average query duration (ms)
-- Query breakdown (SELECT, INSERT, UPDATE, DELETE)
-- Connection usage
-- Storage consumption (GB)
-- Estimated monthly cost
-
-## Billing Model
-
-Charges based on:
-- Query complexity
-- Execution time
-- Storage used
-
-Billed monthly based on actual usage.
-
-## Example
-
-```json
+**Example:**
+```javascript
 {
   "project_id": "your-project-id",
   "hours": 24
 }
 ```
+
+**Credit Billing:**
+Queries are billed based on complexity and execution time. Usage is tracked in real-time and billed monthly.

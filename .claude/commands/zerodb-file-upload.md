@@ -1,28 +1,19 @@
-# ZeroDB File Upload
+---
+description: Upload a file to ZeroDB storage
+---
 
-Upload files to ZeroDB cloud storage.
+Use the mcp__ainative-zerodb__zerodb_upload_file tool to upload files to cloud storage.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_upload_file`
-
-## Use Cases
-
-- Store documents and images
-- Organize files in folders
+Example usage:
+- Store documents, images, or any file type
+- Organize files in virtual folders
 - Attach metadata to files
 
-## Required Parameters
+Key parameters:
+- file_name: Name of the file (required)
+- file_content: Base64-encoded file content (required)
+- content_type: MIME type (default: "application/octet-stream")
+- folder: Virtual folder path (optional)
+- metadata: Additional file metadata (optional)
 
-- **file_name**: The file identifier
-- **file_content**: Base64-encoded file data
-
-## Optional Parameters
-
-- **content_type** (optional): MIME type (default: "application/octet-stream")
-- **folder** (optional): Virtual folder path
-- **metadata** (optional): Additional file metadata (object)
-
-## Example
-
-Ask which file to upload, then use the tool to store it.
+Ask the user which file to upload, then use the tool to store it.

@@ -1,28 +1,20 @@
-# RLHF Feedback Collection
+---
+description: Collect RLHF feedback for agent improvement
+---
 
-Collect user feedback to improve agent performance.
+Use the mcp__ainative-zerodb__zerodb_rlhf_agent_feedback tool to record user feedback.
 
-## Tool
+Example usage:
+- Collect thumbs up/down feedback
+- Record ratings
+- Improve agent responses
+- Train with human feedback
 
-`mcp__ainative-zerodb__zerodb_rlhf_agent_feedback`
+Key parameters:
+- agent_id: Agent identifier (required)
+- feedback_type: "thumbs_up", "thumbs_down", or "rating" (required)
+- rating: Rating value 1-5 for rating type (optional)
+- comment: Feedback comment (optional)
+- context: Feedback context object (optional)
 
-## Feedback Types
-
-1. **Binary feedback**: thumbs up/down
-2. **Numeric ratings**: 1-5 scale
-3. **Qualitative comments**: text feedback
-
-## Required Parameters
-
-- **agent_id**: Agent identifier
-- **feedback_type**: "thumbs_up", "thumbs_down", or "rating"
-
-## Optional Parameters
-
-- **rating** (optional): 1-5 for rating-type feedback
-- **comment** (optional): Text explanation
-- **metadata** (optional): Contextual information (object)
-
-## Example
-
-Collect user feedback for model training.
+Ask the user for feedback, then use the tool to record it for learning.

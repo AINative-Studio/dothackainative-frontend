@@ -1,28 +1,19 @@
-# ZeroDB Vector Upsert
+---
+description: Upsert a vector embedding with metadata to ZeroDB
+---
 
-Store vector embeddings with metadata.
+Use the mcp__ainative-zerodb__zerodb_upsert_vector tool to store a vector embedding (1536 dimensions) with associated document and metadata.
 
-## Tool
+Example usage:
+- Store embeddings from text chunks for semantic search
+- Index document vectors with metadata for filtering
+- Update existing vectors by providing vector_id
 
-`mcp__ainative-zerodb__zerodb_upsert_vector`
+Key parameters:
+- vector_embedding: Array of 1536 numbers (required)
+- document: Source text or document (required)
+- metadata: JSON object with additional info (optional)
+- namespace: Organize vectors into namespaces (default: "default")
+- vector_id: For updating existing vectors (optional)
 
-## Use Cases
-
-- Store embeddings from chunked text
-- Index document vectors with metadata
-- Update existing vectors by ID
-
-## Required Parameters
-
-- **vector_embedding**: Array of 1536 numbers
-- **document**: The source text or content
-
-## Optional Parameters
-
-- **metadata** (optional): Additional information (object)
-- **namespace** (optional): Category grouping (default: "default")
-- **vector_id** (optional): ID for updates
-
-## Example
-
-Ask what to store, then save the vector with metadata.
+Ask the user what they want to upsert, then use the tool to execute the operation.

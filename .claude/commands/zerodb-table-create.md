@@ -1,29 +1,19 @@
-# ZeroDB Table Creation
+---
+description: Create a new NoSQL table in ZeroDB
+---
 
-Create NoSQL tables with schema definitions.
+Use the mcp__ainative-zerodb__zerodb_create_table tool to create a new table with a schema.
 
-## Tool
+Example usage:
+- Create tables for storing structured data
+- Define field types and indexes
+- Set up data models
 
-`mcp__ainative-zerodb__zerodb_create_table`
+Key parameters:
+- table_name: Unique table name (required)
+- schema: Schema definition with fields and indexes (required)
+  - fields: Object defining field names and types
+  - indexes: Array of index definitions
+- description: Table description (optional)
 
-## Required Parameters
-
-- **table_name**: Unique table identifier
-- **schema**: Data structure with:
-  - Field definitions and types
-  - Index configurations
-
-## Optional Parameters
-
-- **description** (optional): Table purpose documentation
-
-## Use Cases
-
-- Structure persistent data
-- Define typed fields
-- Create database indexes
-- Design data models
-
-## Example
-
-Ask for the schema requirements, then create the table.
+Ask the user for table requirements, then use the tool to create the table.

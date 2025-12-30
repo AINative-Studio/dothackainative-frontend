@@ -1,28 +1,19 @@
-# ZeroDB Memory Search
+---
+description: Search agent memory using semantic similarity
+---
 
-Search agent memory using semantic similarity.
+Use the mcp__ainative-zerodb__zerodb_search_memory tool to find relevant past conversations.
 
-## Tool
+Example usage:
+- Find similar past interactions
+- Retrieve context from previous sessions
+- Search across agent memory
 
-`mcp__ainative-zerodb__zerodb_search_memory`
+Key parameters:
+- query: Search query (required)
+- limit: Maximum results (default: 10)
+- session_id: Filter by session (optional)
+- agent_id: Filter by agent (optional)
+- role: Filter by role (optional)
 
-## Use Cases
-
-- Find relevant past conversations
-- Pull context from previous sessions
-- Search across agent conversations
-
-## Required Parameters
-
-- **query**: The search term
-
-## Optional Parameters
-
-- **limit** (optional): Results to return (default: 10)
-- **session_id** (optional): Filter by session
-- **agent_id** (optional): Filter by agent
-- **role** (optional): Filter by role (user/assistant/system)
-
-## Example
-
-Ask what to search for, then query the memory system.
+Ask the user what to search for, then use the tool to find relevant memories.

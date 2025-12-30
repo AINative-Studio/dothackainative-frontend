@@ -1,28 +1,19 @@
-# ZeroDB Event Stream Creation
+---
+description: Create an event in ZeroDB event stream
+---
 
-Create and publish events to a ZeroDB event stream for workflow automation and monitoring.
+Use the mcp__ainative-zerodb__zerodb_create_event tool to publish events.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_create_event`
-
-## Use Cases
-
-- Record application events
+Example usage:
+- Log application events
 - Trigger workflows
-- Monitor user interactions
-- Send notifications
+- Track user actions
+- Publish notifications
 
-## Required Parameters
+Key parameters:
+- event_type: Event type/category (required)
+- event_data: Event payload data object (required)
+- source: Event source identifier (optional)
+- correlation_id: Correlation ID for tracking (optional)
 
-- **event_type**: The category/type of event
-- **event_data**: The event payload (object)
-
-## Optional Parameters
-
-- **source**: Where the event originated
-- **correlation_id**: Track related events across systems
-
-## Example
-
-Ask the user which event they want to create, then invoke the tool to publish it.
+Ask the user what event to create, then use the tool to publish it.

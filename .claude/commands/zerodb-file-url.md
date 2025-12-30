@@ -1,26 +1,17 @@
-# ZeroDB Presigned URL Generation
+---
+description: Generate presigned URL for file access
+---
 
-Create temporary access URLs for files.
+Use the mcp__ainative-zerodb__zerodb_generate_presigned_url tool to create temporary download/upload URLs.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_generate_presigned_url`
-
-## Use Cases
-
+Example usage:
 - Share files with temporary links
-- Enable direct browser access
-- Provide upload capabilities
+- Enable direct browser downloads
+- Create upload URLs for clients
 
-## Required Parameters
+Key parameters:
+- file_id: File ID (required)
+- operation: "download" or "upload" (default: "download")
+- expiration_seconds: URL expiration time (default: 3600)
 
-- **file_id**: The file identifier
-
-## Optional Parameters
-
-- **operation** (optional): "download" or "upload" (default: "download")
-- **expiration_seconds** (optional): URL validity duration (default: 3600)
-
-## Example
-
-Ask which file needs a URL, then generate it.
+Ask the user which file needs a URL, then use the tool to generate it.

@@ -1,22 +1,20 @@
-# ZeroDB PostgreSQL Query Logs
+---
+description: View SQL query logs and performance data
+---
 
-Access detailed query logs for your PostgreSQL instance.
+Access detailed query logs with performance metrics using the ZeroDB MCP server.
 
-## Tool
+**MCP Tool:**
+```
+zerodb_get_postgres_logs
+```
 
-`zerodb_get_postgres_logs`
+**Parameters:**
+- `project_id` (required): Your ZeroDB project ID
+- `limit` (optional): Maximum number of log entries (default: 100)
+- `query_type` (optional): Filter by query type (SELECT, INSERT, UPDATE, DELETE)
 
-## Required Parameters
-
-- **project_id**: Your ZeroDB project ID
-
-## Optional Parameters
-
-- **limit** (optional): Number of entries (default: 100)
-- **query_type** (optional): Filter by SELECT, INSERT, UPDATE, DELETE
-
-## Data Retrieved
-
+**Returns:**
 For each query:
 - SQL query text
 - Execution time (milliseconds)
@@ -27,14 +25,18 @@ For each query:
 - Query type
 - Client/connection information
 
-## Use Cases
+**Example:**
+```javascript
+{
+  "project_id": "your-project-id",
+  "limit": 50,
+  "query_type": "SELECT"
+}
+```
 
-- Find slow queries
-- Troubleshoot errors
-- Monitor usage patterns
-- Audit database access
-- Track resource consumption
-
-## Example
-
-Query logs to identify performance bottlenecks.
+**Use Cases:**
+- Identify slow queries for optimization
+- Debug query performance issues
+- Monitor query patterns and trends
+- Audit database activity
+- Track credit consumption per query

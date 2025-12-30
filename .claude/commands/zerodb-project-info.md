@@ -1,21 +1,15 @@
-# ZeroDB Project Details
+---
+description: Get current ZeroDB project details
+---
 
-Retrieve information about your ZeroDB project.
+Use the mcp__ainative-zerodb__zerodb_get_project tool to view project information.
 
-## Tool
+Example usage:
+- Check current project configuration
+- View project settings
+- Get project metadata
 
-`mcp__ainative-zerodb__zerodb_get_project`
+Key parameters:
+- project_id: Project ID (optional, uses env default if not provided)
 
-## Use Cases
-
-- View project configuration
-- Access project settings
-- Display project metadata
-
-## Parameters
-
-- **project_id** (optional): Uses environment default if not specified
-
-## Example
-
-Get current project information.
+Use this tool to show the user their current project information.

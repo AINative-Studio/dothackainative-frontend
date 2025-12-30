@@ -1,26 +1,17 @@
-# ZeroDB Insert Rows
+---
+description: Insert rows into a ZeroDB table
+---
 
-Insert records into a ZeroDB table.
+Use the mcp__ainative-zerodb__zerodb_insert_rows tool to insert data into a table.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_insert_rows`
-
-## Use Cases
-
-- Add new records
+Example usage:
+- Add new records to a table
 - Bulk insert multiple rows
 - Get inserted row IDs
 
-## Required Parameters
+Key parameters:
+- table_id: Table name or ID (required)
+- rows: Array of row objects to insert (required)
+- return_ids: Return inserted row IDs (default: true)
 
-- **table_id**: Table name or identifier
-- **rows**: Array of row objects
-
-## Optional Parameters
-
-- **return_ids** (optional): Return IDs of inserted rows (default: true)
-
-## Example
-
-Ask what data to insert, then add it to the table.
+Ask the user what data to insert, then use the tool to add the rows.

@@ -1,27 +1,18 @@
-# ZeroDB Row Updates
+---
+description: Update rows in a ZeroDB table
+---
 
-Update existing table records.
+Use the mcp__ainative-zerodb__zerodb_update_rows tool to update existing table data.
 
-## Tool
+Example usage:
+- Update records matching a filter
+- Use MongoDB-style update operators ($set, $inc, etc.)
+- Upsert if records don't exist
 
-`mcp__ainative-zerodb__zerodb_update_rows`
+Key parameters:
+- table_id: Table name or ID (required)
+- filter: MongoDB-style query filter (required)
+- update: Update operations object (required)
+- upsert: Insert if not found (default: false)
 
-## Use Cases
-
-- Modify records with filters
-- Use MongoDB update operators ($set, $inc)
-- Perform upsert operations
-
-## Required Parameters
-
-- **table_id**: Table name or identifier
-- **filter**: MongoDB-style query
-- **update**: Modification operations
-
-## Optional Parameters
-
-- **upsert** (optional): Create if not found (default: false)
-
-## Example
-
-Ask what changes to make, then update rows.
+Ask the user what to update, then use the tool to modify the rows.

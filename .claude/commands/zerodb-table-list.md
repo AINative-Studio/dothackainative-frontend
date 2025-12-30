@@ -1,22 +1,16 @@
-# ZeroDB Table Listing
+---
+description: List all tables in ZeroDB project
+---
 
-View all tables in your ZeroDB project.
+Use the mcp__ainative-zerodb__zerodb_list_tables tool to list all tables in the current project.
 
-## Tool
-
-`mcp__ainative-zerodb__zerodb_list_tables`
-
-## Use Cases
-
+Example usage:
 - Browse available tables
-- Review table schemas
-- Understand data structure
+- Check table schemas
+- Navigate project data structure
 
-## Parameters
+Key parameters:
+- limit: Maximum number of results (default: 100)
+- offset: Pagination offset (default: 0)
 
-- **limit** (optional): Results to return (default: 100)
-- **offset** (optional): Pagination offset (default: 0)
-
-## Example
-
-List all tables in the current project.
+Use this tool to show the user all tables in their project.
