@@ -4,7 +4,10 @@ import {
   createTrack,
   listTracks,
   getTracksByHackathon,
+  updateTrack,
+  deleteTrack,
   type CreateTrackInput,
+  type UpdateTrackInput,
   type ListTracksParams
 } from '../lib/api/tracks'
 
@@ -35,6 +38,31 @@ export function useCreateTrack() {
       queryClient.invalidateQueries({
         queryKey: [TRACKS_QUERY_KEY, { hackathon_id: data.hackathon_id }]
       })
+    }
+  })
+}
+
+export function useUpdateTrack() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (input: UpdateTrackInput) => updateTrack(input),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [TRACKS_QUERY_KEY] })
+      queryClient.invalidateQueries({
+        queryKey: [TRACKS_QUERY_KEY, { hackathon_id: data.hackathon_id }]
+      })
+    }
+  })
+}
+
+export function useDeleteTrack() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (trackId: string) => deleteTrack(trackId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TRACKS_QUERY_KEY] })
     }
   })
 }
