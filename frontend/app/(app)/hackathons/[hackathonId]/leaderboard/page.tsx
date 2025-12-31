@@ -6,8 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { useStore } from '@/lib/store'
-import { Trophy, Download } from 'lucide-react'
+import { useHackathonById } from '@/hooks/use-hackathons'
+import { useProjectsByHackathon } from '@/hooks/use-projects'
+import { useTeamsByHackathon } from '@/hooks/use-teams'
+import { useTracksByHackathon } from '@/hooks/use-tracks'
+import { useSubmissionsByHackathon } from '@/hooks/use-submissions'
+import { useScoresByHackathon } from '@/hooks/use-scores'
+import { Trophy, Download, Loader2 } from 'lucide-react'
 
 type LeaderboardEntry = {
   rank: number
@@ -23,9 +28,24 @@ export default function LeaderboardPage({
 }: {
   params: { hackathonId: string }
 }) {
-  const { data, getCurrentHackathonStatus } = useStore()
-  const hackathon = getCurrentHackathonStatus(params.hackathonId)
+  const { data: hackathon, isLoading: hackathonLoading } = useHackathonById(params.hackathonId)
+  const { data: projects = [], isLoading: projectsLoading } = useProjectsByHackathon(params.hackathonId)
+  const { data: teams = [], isLoading: teamsLoading } = useTeamsByHackathon(params.hackathonId)
+  const { data: tracks = [], isLoading: tracksLoading } = useTracksByHackathon(params.hackathonId)
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissionsByHackathon(params.hackathonId)
+  const { data: scores = [], isLoading: scoresLoading } = useScoresByHackathon(params.hackathonId)
+
   const [selectedTrackId, setSelectedTrackId] = useState<string>('all')
+
+  if (hackathonLoading || projectsLoading || teamsLoading || tracksLoading || submissionsLoading || scoresLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
 
   if (!hackathon) {
     return (
@@ -34,13 +54,6 @@ export default function LeaderboardPage({
       </div>
     )
   }
-
-  const projects = data.projects.filter(p => p.hackathon_id === params.hackathonId)
-  const teams = data.teams.filter(t => t.hackathon_id === params.hackathonId)
-  const tracks = data.tracks.filter(t => t.hackathon_id === params.hackathonId)
-  const submissions = data.submissions.filter(s =>
-    projects.some(p => p.project_id === s.project_id)
-  )
 
   const leaderboardData = useMemo(() => {
     const entries: LeaderboardEntry[] = []
@@ -56,7 +69,7 @@ export default function LeaderboardPage({
       const projectSubmission = submissions.find(s => s.project_id === project.project_id)
       if (!projectSubmission) return
 
-      const projectScores = data.scores.filter(s => s.submission_id === projectSubmission.submission_id)
+      const projectScores = scores.filter(s => s.submission_id === projectSubmission.submission_id)
       if (projectScores.length === 0) return
 
       const averageScore =
@@ -78,7 +91,7 @@ export default function LeaderboardPage({
     })
 
     return entries
-  }, [projects, teams, tracks, submissions, data.scores, selectedTrackId])
+  }, [projects, teams, tracks, submissions, scores, selectedTrackId])
 
   const exportToCSV = () => {
     const headers = ['Rank', 'Project', 'Team', 'Track', 'Average Score', 'Score Count']

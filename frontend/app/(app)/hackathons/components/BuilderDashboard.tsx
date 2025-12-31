@@ -4,22 +4,36 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useStore } from '@/lib/store'
-import { Calendar, ArrowRight, Users, FolderKanban, FileCheck } from 'lucide-react'
+import { useHackathons } from '@/hooks/use-hackathons'
+import { useTeams } from '@/hooks/use-teams'
+import { useProjects } from '@/hooks/use-projects'
+import { useSubmissions } from '@/hooks/use-submissions'
+import { useHackathonParticipants } from '@/hooks/use-participants'
+import { Calendar, ArrowRight, Users, FolderKanban, FileCheck, Loader2 } from 'lucide-react'
 
 export function BuilderDashboard() {
   const router = useRouter()
-  const { data, getCurrentHackathonStatus } = useStore()
+  const { data: hackathons = [], isLoading: hackathonsLoading } = useHackathons()
+  const { data: teams = [], isLoading: teamsLoading } = useTeams()
+  const { data: projects = [], isLoading: projectsLoading } = useProjects()
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissions()
+  const { data: allParticipants = [], isLoading: participantsLoading } = useHackathonParticipants()
 
-  const uniqueHackathons = Array.from(
-    new Map(data.hackathons.map(h => [h.hackathon_id, h])).values()
-  ).map(h => getCurrentHackathonStatus(h.hackathon_id)!)
+  if (hackathonsLoading || teamsLoading || projectsLoading || submissionsLoading || participantsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
 
-  const liveHackathons = uniqueHackathons.filter(h => h.status === 'LIVE')
+  const liveHackathons = hackathons.filter(h => h.status === 'LIVE')
 
-  const myTeams = data.teams.length
-  const myProjects = data.projects.length
-  const mySubmissions = data.submissions.length
+  const myTeams = teams.length
+  const myProjects = projects.length
+  const mySubmissions = submissions.length
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -99,7 +113,7 @@ export function BuilderDashboard() {
           <CardDescription>Browse and join hackathons to start building</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          {uniqueHackathons.length === 0 ? (
+          {hackathons.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
                 <Calendar className="h-8 w-8 text-slate-400" />
@@ -109,7 +123,7 @@ export function BuilderDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {uniqueHackathons.map((hackathon) => (
+              {hackathons.map((hackathon) => (
                 <div key={hackathon.hackathon_id} className="p-4 sm:p-6 border-2 rounded-lg hover:shadow-md transition-all">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1">
@@ -127,11 +141,11 @@ export function BuilderDashboard() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
-                          {data.hackathonParticipants.filter(hp => hp.hackathon_id === hackathon.hackathon_id).length} participants
+                          {allParticipants.filter(hp => hp.hackathon_id === hackathon.hackathon_id).length} participants
                         </span>
                         <span className="flex items-center gap-1">
                           <FolderKanban className="h-4 w-4" />
-                          {data.projects.filter(p => p.hackathon_id === hackathon.hackathon_id).length} projects
+                          {projects.filter(p => p.hackathon_id === hackathon.hackathon_id).length} projects
                         </span>
                       </div>
                     </div>

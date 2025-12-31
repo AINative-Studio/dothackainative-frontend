@@ -11,17 +11,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { useStore } from '@/lib/store'
-import { Participant, HackathonParticipant, Invitation } from '@/lib/types'
-import { Plus, Mail } from 'lucide-react'
+import { useHackathonById } from '@/hooks/use-hackathons'
+import { useParticipantsByHackathon, useRegisterAndEnroll } from '@/hooks/use-participants'
+import { useInvitationsByHackathon, useCreateInvitation } from '@/hooks/use-invitations'
+import { Plus, Mail, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function ParticipantsPage({
   params,
 }: {
   params: { hackathonId: string }
 }) {
-  const { data, addParticipant, addHackathonParticipant, addInvitation, getCurrentHackathonStatus } = useStore()
-  const hackathon = getCurrentHackathonStatus(params.hackathonId)
+  const { data: hackathon, isLoading: hackathonLoading } = useHackathonById(params.hackathonId)
+  const { data: hackathonParticipants = [], isLoading: participantsLoading } = useParticipantsByHackathon(params.hackathonId)
+  const { data: invitations = [], isLoading: invitationsLoading } = useInvitationsByHackathon(params.hackathonId)
+
+  const registerAndEnroll = useRegisterAndEnroll()
+  const createInvitation = useCreateInvitation()
 
   const [showForm, setShowForm] = useState(false)
   const [showInviteDialog, setShowInviteDialog] = useState(false)
@@ -37,6 +43,16 @@ export default function ParticipantsPage({
     message: '',
   })
 
+  if (hackathonLoading || participantsLoading || invitationsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
+
   if (!hackathon) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -45,63 +61,49 @@ export default function ParticipantsPage({
     )
   }
 
-  const hackathonParticipants = data.hackathonParticipants
-    .filter(hp => hp.hackathon_id === params.hackathonId)
-    .map(hp => {
-      const participant = data.participants.find(p => p.participant_id === hp.participant_id)
-      return { ...hp, participant }
-    })
-
-  const invitations = data.invitations.filter(inv => inv.hackathon_id === params.hackathonId)
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    let existingParticipant = data.participants.find(p => p.email === formData.email)
-
-    if (!existingParticipant) {
-      existingParticipant = {
-        participant_id: `part_${Date.now()}`,
-        name: formData.name,
-        email: formData.email,
-        org: formData.org || undefined,
-      }
-      addParticipant(existingParticipant)
+    try {
+      await registerAndEnroll.mutateAsync({
+        participant: {
+          name: formData.name,
+          email: formData.email,
+          org: formData.org || undefined,
+        },
+        enrollment: {
+          hackathon_id: params.hackathonId,
+          role: formData.role,
+        },
+      })
+      toast.success('Participant added successfully')
+      setFormData({ name: '', email: '', org: '', role: 'BUILDER' })
+      setShowForm(false)
+    } catch (error) {
+      console.error('Failed to add participant:', error)
+      toast.error('Failed to add participant', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      })
     }
-
-    const alreadyAdded = data.hackathonParticipants.find(
-      hp => hp.hackathon_id === params.hackathonId && hp.participant_id === existingParticipant!.participant_id
-    )
-
-    if (!alreadyAdded) {
-      const hp: HackathonParticipant = {
-        hackathon_id: params.hackathonId,
-        participant_id: existingParticipant.participant_id,
-        role: formData.role,
-      }
-      addHackathonParticipant(hp)
-    }
-
-    setFormData({ name: '', email: '', org: '', role: 'BUILDER' })
-    setShowForm(false)
   }
 
-  const handleInvite = (e: React.FormEvent) => {
+  const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    const newInvitation: Invitation = {
-      invitation_id: `inv_${Date.now()}`,
-      hackathon_id: params.hackathonId,
-      email: inviteData.email,
-      role: inviteData.role,
-      status: 'PENDING',
-      message: inviteData.message || undefined,
-      created_at: new Date().toISOString(),
+    try {
+      await createInvitation.mutateAsync({
+        hackathon_id: params.hackathonId,
+        email: inviteData.email,
+        role: inviteData.role,
+        message: inviteData.message || undefined,
+      })
+      toast.success('Invitation sent successfully')
+      setInviteData({ email: '', role: 'JUDGE', message: '' })
+      setShowInviteDialog(false)
+    } catch (error) {
+      console.error('Failed to send invitation:', error)
+      toast.error('Failed to send invitation', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      })
     }
-
-    addInvitation(newInvitation)
-    setInviteData({ email: '', role: 'JUDGE', message: '' })
-    setShowInviteDialog(false)
   }
 
   const getRoleBadgeColor = (role: string) => {
@@ -191,11 +193,28 @@ export default function ParticipantsPage({
                   />
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setShowInviteDialog(false)} className="flex-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowInviteDialog(false)}
+                    className="flex-1"
+                    disabled={createInvitation.isPending}
+                  >
                     Cancel
                   </Button>
-                  <Button type="submit" className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600">
-                    Send Invite
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600"
+                    disabled={createInvitation.isPending}
+                  >
+                    {createInvitation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      'Send Invite'
+                    )}
                   </Button>
                 </div>
               </form>
@@ -261,8 +280,22 @@ export default function ParticipantsPage({
                 </Select>
               </div>
               <div className="flex gap-2">
-                <Button type="submit">Add</Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="submit" disabled={registerAndEnroll.isPending}>
+                  {registerAndEnroll.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    'Add'
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                  disabled={registerAndEnroll.isPending}
+                >
                   Cancel
                 </Button>
               </div>

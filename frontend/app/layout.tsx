@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { StoreProvider } from '@/lib/store';
 import { QueryProvider } from '@/lib/query-provider';
 import { AuthProvider } from '@/lib/auth/auth-context';
 import { Toaster } from '@/components/ui/toaster';
@@ -39,11 +38,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <QueryProvider>
           <AuthProvider>
-            <StoreProvider>
-              {children}
-              <Toaster />
-              <ErrorToastSetup />
-            </StoreProvider>
+            {children}
+            <Toaster />
+            <ErrorToastSetup />
           </AuthProvider>
         </QueryProvider>
       </body>

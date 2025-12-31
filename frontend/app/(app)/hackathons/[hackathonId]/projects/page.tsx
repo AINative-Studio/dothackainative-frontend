@@ -8,17 +8,23 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { useStore } from '@/lib/store'
-import { Project } from '@/lib/types'
-import { Plus, ExternalLink } from 'lucide-react'
+import { useHackathonById } from '@/hooks/use-hackathons'
+import { useProjectsByHackathon, useCreateProject, useUpdateProject } from '@/hooks/use-projects'
+import { useTeamsByHackathon } from '@/hooks/use-teams'
+import { Plus, ExternalLink, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function ProjectsPage({
   params,
 }: {
   params: { hackathonId: string }
 }) {
-  const { data, addProject, updateProject, getCurrentHackathonStatus } = useStore()
-  const hackathon = getCurrentHackathonStatus(params.hackathonId)
+  const { data: hackathon, isLoading: hackathonLoading } = useHackathonById(params.hackathonId)
+  const { data: projects = [], isLoading: projectsLoading } = useProjectsByHackathon(params.hackathonId)
+  const { data: teams = [], isLoading: teamsLoading } = useTeamsByHackathon(params.hackathonId)
+
+  const createProject = useCreateProject()
+  const updateProjectMutation = useUpdateProject()
 
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,6 +35,16 @@ export default function ProjectsPage({
     demo_url: '',
   })
 
+  if (hackathonLoading || projectsLoading || teamsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
+
   if (!hackathon) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -37,24 +53,41 @@ export default function ProjectsPage({
     )
   }
 
-  const projects = data.projects.filter(p => p.hackathon_id === params.hackathonId)
-  const teams = data.teams.filter(t => t.hackathon_id === params.hackathonId)
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const newProject: Project = {
-      project_id: `proj_${Date.now()}`,
-      hackathon_id: params.hackathonId,
-      team_id: formData.team_id,
-      title: formData.title,
-      one_liner: formData.one_liner || undefined,
-      status: 'IDEA',
-      repo_url: formData.repo_url || undefined,
-      demo_url: formData.demo_url || undefined,
+    try {
+      await createProject.mutateAsync({
+        hackathon_id: params.hackathonId,
+        team_id: formData.team_id,
+        title: formData.title,
+        one_liner: formData.one_liner || undefined,
+        repo_url: formData.repo_url || undefined,
+        demo_url: formData.demo_url || undefined,
+      })
+      toast.success('Project created successfully')
+      setFormData({ team_id: '', title: '', one_liner: '', repo_url: '', demo_url: '' })
+      setShowForm(false)
+    } catch (error) {
+      console.error('Failed to create project:', error)
+      toast.error('Failed to create project', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      })
     }
-    addProject(newProject)
-    setFormData({ team_id: '', title: '', one_liner: '', repo_url: '', demo_url: '' })
-    setShowForm(false)
+  }
+
+  const handleStatusChange = async (projectId: string, status: 'IDEA' | 'BUILDING' | 'SUBMITTED') => {
+    try {
+      await updateProjectMutation.mutateAsync({
+        project_id: projectId,
+        status,
+      })
+      toast.success('Project status updated')
+    } catch (error) {
+      console.error('Failed to update project:', error)
+      toast.error('Failed to update project', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      })
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -147,8 +180,22 @@ export default function ProjectsPage({
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="submit">Create</Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="submit" disabled={createProject.isPending}>
+                  {createProject.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create'
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                  disabled={createProject.isPending}
+                >
                   Cancel
                 </Button>
               </div>
@@ -222,8 +269,9 @@ export default function ProjectsPage({
                       <Select
                         value={project.status}
                         onValueChange={(value: any) =>
-                          updateProject(project.project_id, { status: value })
+                          handleStatusChange(project.project_id, value)
                         }
+                        disabled={updateProjectMutation.isPending}
                       >
                         <SelectTrigger className="h-8">
                           <SelectValue />

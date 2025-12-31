@@ -9,17 +9,25 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useStore } from '@/lib/store'
-import { Submission } from '@/lib/types'
-import { Plus, Search, AlertCircle } from 'lucide-react'
+import { useHackathonById } from '@/hooks/use-hackathons'
+import { useProjectsByHackathon, useUpdateProject } from '@/hooks/use-projects'
+import { useSubmissionsByHackathon, useCreateSubmission } from '@/hooks/use-submissions'
+import { useTeamsByHackathon } from '@/hooks/use-teams'
+import { Plus, Search, AlertCircle, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function SubmissionsPage({
   params,
 }: {
   params: { hackathonId: string }
 }) {
-  const { data, addSubmission, updateProject, getCurrentHackathonStatus } = useStore()
-  const hackathon = getCurrentHackathonStatus(params.hackathonId)
+  const { data: hackathon, isLoading: hackathonLoading } = useHackathonById(params.hackathonId)
+  const { data: projects = [], isLoading: projectsLoading } = useProjectsByHackathon(params.hackathonId)
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissionsByHackathon(params.hackathonId)
+  const { data: teams = [], isLoading: teamsLoading } = useTeamsByHackathon(params.hackathonId)
+
+  const createSubmission = useCreateSubmission()
+  const updateProjectMutation = useUpdateProject()
 
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,6 +37,16 @@ export default function SubmissionsPage({
   })
   const [searchQuery, setSearchQuery] = useState('')
 
+  if (hackathonLoading || projectsLoading || submissionsLoading || teamsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
+
   if (!hackathon) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -37,35 +55,52 @@ export default function SubmissionsPage({
     )
   }
 
-  const projects = data.projects.filter(p => p.hackathon_id === params.hackathonId)
-  const allSubmissions = data.submissions.filter(s =>
-    projects.some(p => p.project_id === s.project_id)
-  )
-
   const filteredSubmissions = searchQuery
-    ? allSubmissions.filter(s =>
+    ? submissions.filter(s =>
         s.submission_text.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.artifact_links_json.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : allSubmissions
+    : submissions
 
   const isClosed = hackathon.status === 'CLOSED'
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (isClosed) return
 
-    const newSubmission: Submission = {
-      submission_id: `sub_${Date.now()}`,
-      project_id: formData.project_id,
-      submitted_at: new Date().toISOString(),
-      submission_text: formData.submission_text,
-      artifact_links_json: formData.artifact_links_json,
+    try {
+      // Parse artifact links JSON
+      let artifactLinks = []
+      try {
+        artifactLinks = JSON.parse(formData.artifact_links_json)
+      } catch (error) {
+        toast.error('Invalid JSON format for artifact links')
+        return
+      }
+
+      // Create submission
+      await createSubmission.mutateAsync({
+        project_id: formData.project_id,
+        hackathon_id: params.hackathonId,
+        submission_text: formData.submission_text,
+        artifact_links: artifactLinks,
+      })
+
+      // Update project status to SUBMITTED
+      await updateProjectMutation.mutateAsync({
+        project_id: formData.project_id,
+        status: 'SUBMITTED',
+      })
+
+      toast.success('Project submitted successfully')
+      setFormData({ project_id: '', submission_text: '', artifact_links_json: '' })
+      setShowForm(false)
+    } catch (error) {
+      console.error('Failed to submit project:', error)
+      toast.error('Failed to submit project', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      })
     }
-    addSubmission(newSubmission)
-    updateProject(formData.project_id, { status: 'SUBMITTED' })
-    setFormData({ project_id: '', submission_text: '', artifact_links_json: '' })
-    setShowForm(false)
   }
 
   return (
@@ -148,8 +183,22 @@ export default function SubmissionsPage({
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button type="submit">Submit</Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="submit" disabled={createSubmission.isPending || updateProjectMutation.isPending}>
+                  {createSubmission.isPending || updateProjectMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit'
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                  disabled={createSubmission.isPending || updateProjectMutation.isPending}
+                >
                   Cancel
                 </Button>
               </div>
@@ -190,7 +239,7 @@ export default function SubmissionsPage({
         <div className="space-y-6">
           {filteredSubmissions.map((submission) => {
             const project = projects.find(p => p.project_id === submission.project_id)
-            const team = project ? data.teams.find(t => t.team_id === project.team_id) : null
+            const team = project ? teams.find(t => t.team_id === project.team_id) : null
 
             return (
               <Card key={submission.submission_id}>

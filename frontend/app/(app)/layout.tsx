@@ -1,11 +1,11 @@
 "use client"
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Code as Code2, Settings, Users, UsersRound, FolderKanban, FileCheck, Gavel, Trophy, Award, Key } from 'lucide-react'
-import { useStore } from '@/lib/store'
 import { UserRole } from '@/lib/types'
 
 export default function AppLayout({
@@ -13,7 +13,8 @@ export default function AppLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { data, setCurrentRole } = useStore()
+  // TODO: Replace with proper auth context when available
+  const [currentRole, setCurrentRole] = useState<UserRole>('ORGANIZER')
   const pathname = usePathname()
 
   const hackathonMatch = pathname.match(/\/hackathons\/([^\/]+)/)
@@ -36,7 +37,7 @@ export default function AppLayout({
   ] : []
 
   const visibleLinks = [...navLinks, ...hackathonLinks].filter(link =>
-    link.roles.includes(data.currentRole)
+    link.roles.includes(currentRole)
   )
 
   return (
@@ -76,7 +77,7 @@ export default function AppLayout({
               </nav>
 
               <Select
-                value={data.currentRole}
+                value={currentRole}
                 onValueChange={(value) => setCurrentRole(value as UserRole)}
               >
                 <SelectTrigger className="w-[140px] border-2">

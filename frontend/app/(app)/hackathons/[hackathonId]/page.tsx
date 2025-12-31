@@ -3,17 +3,35 @@
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { useStore } from '@/lib/store'
-import { Settings, Users, UsersRound, FolderKanban, FileCheck, Gavel, Trophy } from 'lucide-react'
+import { useHackathonById } from '@/hooks/use-hackathons'
+import { useParticipantsByHackathon } from '@/hooks/use-participants'
+import { useTeamsByHackathon } from '@/hooks/use-teams'
+import { useProjectsByHackathon } from '@/hooks/use-projects'
+import { useSubmissionsByHackathon } from '@/hooks/use-submissions'
+import { usePrizesByHackathon } from '@/hooks/use-prizes'
+import { Settings, Users, UsersRound, FolderKanban, FileCheck, Gavel, Trophy, Loader2 } from 'lucide-react'
 
 export default function HackathonOverviewPage({
   params,
 }: {
   params: { hackathonId: string }
 }) {
-  const { data, getCurrentHackathonStatus } = useStore()
-  const hackathon = getCurrentHackathonStatus(params.hackathonId)
+  const { data: hackathon, isLoading: hackathonLoading } = useHackathonById(params.hackathonId)
+  const { data: participants = [], isLoading: participantsLoading } = useParticipantsByHackathon(params.hackathonId)
+  const { data: teams = [], isLoading: teamsLoading } = useTeamsByHackathon(params.hackathonId)
+  const { data: projects = [], isLoading: projectsLoading } = useProjectsByHackathon(params.hackathonId)
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissionsByHackathon(params.hackathonId)
+  const { data: prizes = [], isLoading: prizesLoading } = usePrizesByHackathon(params.hackathonId)
+
+  if (hackathonLoading || participantsLoading || teamsLoading || projectsLoading || submissionsLoading || prizesLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
 
   if (!hackathon) {
     return (
@@ -27,25 +45,11 @@ export default function HackathonOverviewPage({
     )
   }
 
-  const participantCount = data.hackathonParticipants.filter(
-    hp => hp.hackathon_id === params.hackathonId
-  ).length
-
-  const teamCount = data.teams.filter(
-    t => t.hackathon_id === params.hackathonId
-  ).length
-
-  const projectCount = data.projects.filter(
-    p => p.hackathon_id === params.hackathonId
-  ).length
-
-  const submissionCount = data.submissions.filter(
-    s => data.projects.find(p => p.project_id === s.project_id && p.hackathon_id === params.hackathonId)
-  ).length
-
-  const prizeCount = data.prizes.filter(
-    p => p.hackathon_id === params.hackathonId
-  ).length
+  const participantCount = participants.length
+  const teamCount = teams.length
+  const projectCount = projects.length
+  const submissionCount = submissions.length
+  const prizeCount = prizes.length
 
   const getStatusColor = (status: string) => {
     switch (status) {

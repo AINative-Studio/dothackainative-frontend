@@ -9,13 +9,20 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { useStore } from '@/lib/store'
-import { Hackathon } from '@/lib/types'
-import { Plus, Calendar, ArrowRight, Users, Trophy, FolderKanban } from 'lucide-react'
+import { useHackathons, useCreateHackathon } from '@/hooks/use-hackathons'
+import { useHackathonParticipants } from '@/hooks/use-participants'
+import { useProjects } from '@/hooks/use-projects'
+import { Plus, Calendar, ArrowRight, Users, Trophy, FolderKanban, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export function OrganizerDashboard() {
   const router = useRouter()
-  const { data, addHackathon, getCurrentHackathonStatus } = useStore()
+  const { data: hackathons = [], isLoading: hackathonsLoading } = useHackathons()
+  const { data: allParticipants = [], isLoading: participantsLoading } = useHackathonParticipants()
+  const { data: allProjects = [], isLoading: projectsLoading } = useProjects()
+
+  const createHackathon = useCreateHackathon()
+
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -24,30 +31,39 @@ export function OrganizerDashboard() {
     end_at: '',
   })
 
-  const uniqueHackathons = Array.from(
-    new Map(data.hackathons.map(h => [h.hackathon_id, h])).values()
-  ).map(h => getCurrentHackathonStatus(h.hackathon_id)!)
+  if (hackathonsLoading || participantsLoading || projectsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
 
-  const liveHackathons = uniqueHackathons.filter(h => h.status === 'LIVE')
-  const totalParticipants = data.hackathonParticipants.length
-  const totalProjects = data.projects.length
+  const liveHackathons = hackathons.filter(h => h.status === 'LIVE')
+  const totalParticipants = allParticipants.length
+  const totalProjects = allProjects.length
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const hackathonId = `hack_${Date.now()}`
-    const newHackathon: Hackathon = {
-      hackathon_id: hackathonId,
-      name: formData.name,
-      description: formData.description,
-      status: 'DRAFT',
-      start_at: formData.start_at,
-      end_at: formData.end_at,
-      created_at: new Date().toISOString(),
+    try {
+      const result = await createHackathon.mutateAsync({
+        name: formData.name,
+        description: formData.description,
+        start_at: formData.start_at,
+        end_at: formData.end_at,
+      })
+      toast.success('Hackathon created successfully')
+      setFormData({ name: '', description: '', start_at: '', end_at: '' })
+      setShowForm(false)
+      router.push(`/hackathons/${result.hackathon_id}`)
+    } catch (error) {
+      console.error('Failed to create hackathon:', error)
+      toast.error('Failed to create hackathon', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      })
     }
-    addHackathon(newHackathon)
-    setFormData({ name: '', description: '', start_at: '', end_at: '' })
-    setShowForm(false)
-    router.push(`/hackathons/${hackathonId}`)
   }
 
   const getStatusColor = (status: string) => {
@@ -85,7 +101,7 @@ export function OrganizerDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-900">{uniqueHackathons.length}</div>
+            <div className="text-3xl font-bold text-slate-900">{hackathons.length}</div>
             <p className="text-xs text-slate-600 mt-1">{liveHackathons.length} live</p>
           </CardContent>
         </Card>
@@ -173,10 +189,27 @@ export function OrganizerDashboard() {
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <Button type="submit" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
-                  Create Hackathon
+                <Button
+                  type="submit"
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  disabled={createHackathon.isPending}
+                >
+                  {createHackathon.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Hackathon'
+                  )}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                  className="border-2"
+                  disabled={createHackathon.isPending}
+                >
                   Cancel
                 </Button>
               </div>
@@ -185,7 +218,7 @@ export function OrganizerDashboard() {
         </Card>
       )}
 
-      {uniqueHackathons.length === 0 ? (
+      {hackathons.length === 0 ? (
         <Card className="border-2 shadow-lg">
           <CardContent className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
@@ -217,7 +250,7 @@ export function OrganizerDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {uniqueHackathons.map((hackathon) => (
+                {hackathons.map((hackathon) => (
                   <TableRow key={hackathon.hackathon_id} className="hover:bg-slate-50/50 transition-colors">
                     <TableCell className="font-semibold text-slate-900">{hackathon.name}</TableCell>
                     <TableCell>

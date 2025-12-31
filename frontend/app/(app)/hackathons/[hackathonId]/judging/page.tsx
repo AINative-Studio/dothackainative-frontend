@@ -7,21 +7,42 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { useStore } from '@/lib/store'
-import { Score } from '@/lib/types'
-import { Gavel } from 'lucide-react'
+import { useHackathonById } from '@/hooks/use-hackathons'
+import { useProjectsByHackathon } from '@/hooks/use-projects'
+import { useSubmissionsByHackathon } from '@/hooks/use-submissions'
+import { useRubricByHackathon } from '@/hooks/use-rubrics'
+import { useScoresByHackathon, useCreateScore } from '@/hooks/use-scores'
+import { useTeamsByHackathon } from '@/hooks/use-teams'
+import { Gavel, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function JudgingPage({
   params,
 }: {
   params: { hackathonId: string }
 }) {
-  const { data, addScore, getCurrentHackathonStatus } = useStore()
-  const hackathon = getCurrentHackathonStatus(params.hackathonId)
+  const { data: hackathon, isLoading: hackathonLoading } = useHackathonById(params.hackathonId)
+  const { data: projects = [], isLoading: projectsLoading } = useProjectsByHackathon(params.hackathonId)
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissionsByHackathon(params.hackathonId)
+  const { data: rubrics = [], isLoading: rubricsLoading } = useRubricByHackathon(params.hackathonId)
+  const { data: scores = [], isLoading: scoresLoading } = useScoresByHackathon(params.hackathonId)
+  const { data: teams = [], isLoading: teamsLoading } = useTeamsByHackathon(params.hackathonId)
+
+  const createScore = useCreateScore()
 
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null)
-  const [scores, setScores] = useState<Record<string, number>>({})
+  const [criterionScores, setCriterionScores] = useState<Record<string, number>>({})
   const [feedback, setFeedback] = useState('')
+
+  if (hackathonLoading || projectsLoading || submissionsLoading || rubricsLoading || scoresLoading || teamsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
 
   if (!hackathon) {
     return (
@@ -31,32 +52,35 @@ export default function JudgingPage({
     )
   }
 
-  const projects = data.projects.filter(p => p.hackathon_id === params.hackathonId)
-  const submissions = data.submissions.filter(s =>
-    projects.some(p => p.project_id === s.project_id)
-  )
-  const rubrics = data.rubrics.filter(r => r.hackathon_id === params.hackathonId)
+  const handleSubmitScore = async (submissionId: string) => {
+    try {
+      // Convert criterionScores object to array format expected by API
+      const criterionScoresArray = Object.entries(criterionScores).map(([criterion, score]) => ({
+        criterion_id: criterion,
+        score: score
+      }))
 
-  const handleSubmitScore = (submissionId: string) => {
-    const totalScore = Object.values(scores).reduce((sum, val) => sum + val, 0)
+      await createScore.mutateAsync({
+        submission_id: submissionId,
+        judge_participant_id: 'judge_demo', // TODO: Get from auth context
+        criterion_scores: criterionScoresArray,
+        feedback: feedback || undefined,
+      })
 
-    const newScore: Score = {
-      score_id: `score_${Date.now()}`,
-      submission_id: submissionId,
-      judge_participant_id: 'judge_demo',
-      score_json: JSON.stringify(scores),
-      total_score: totalScore,
-      feedback: feedback || undefined,
+      toast.success('Score submitted successfully')
+      setSelectedSubmission(null)
+      setCriterionScores({})
+      setFeedback('')
+    } catch (error) {
+      console.error('Failed to submit score:', error)
+      toast.error('Failed to submit score', {
+        description: error instanceof Error ? error.message : 'Please try again',
+      })
     }
-
-    addScore(newScore)
-    setSelectedSubmission(null)
-    setScores({})
-    setFeedback('')
   }
 
   const getSubmissionScores = (submissionId: string) => {
-    return data.scores.filter(s => s.submission_id === submissionId)
+    return scores.filter(s => s.submission_id === submissionId)
   }
 
   return (
@@ -103,7 +127,7 @@ export default function JudgingPage({
         <div className="space-y-6">
           {submissions.map((submission) => {
             const project = projects.find(p => p.project_id === submission.project_id)
-            const team = project ? data.teams.find(t => t.team_id === project.team_id) : null
+            const team = project ? teams.find(t => t.team_id === project.team_id) : null
             const existingScores = getSubmissionScores(submission.submission_id)
             const isScoring = selectedSubmission === submission.submission_id
 
@@ -185,9 +209,9 @@ export default function JudgingPage({
                                 type="number"
                                 min="0"
                                 max="100"
-                                value={scores['overall'] || ''}
+                                value={criterionScores['overall'] || ''}
                                 onChange={(e) =>
-                                  setScores({ ...scores, overall: Number(e.target.value) })
+                                  setCriterionScores({ ...criterionScores, overall: Number(e.target.value) })
                                 }
                                 placeholder="0-100"
                               />
@@ -207,9 +231,9 @@ export default function JudgingPage({
                                   type="number"
                                   min="0"
                                   max={config.max || 100}
-                                  value={scores[criterion] || ''}
+                                  value={criterionScores[criterion] || ''}
                                   onChange={(e) =>
-                                    setScores({ ...scores, [criterion]: Number(e.target.value) })
+                                    setCriterionScores({ ...criterionScores, [criterion]: Number(e.target.value) })
                                   }
                                   placeholder={`0-${config.max || 100}`}
                                 />
@@ -232,16 +256,27 @@ export default function JudgingPage({
                         </div>
 
                         <div className="flex gap-2">
-                          <Button onClick={() => handleSubmitScore(submission.submission_id)}>
-                            Submit Score
+                          <Button
+                            onClick={() => handleSubmitScore(submission.submission_id)}
+                            disabled={createScore.isPending}
+                          >
+                            {createScore.isPending ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Submitting...
+                              </>
+                            ) : (
+                              'Submit Score'
+                            )}
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => {
                               setSelectedSubmission(null)
-                              setScores({})
+                              setCriterionScores({})
                               setFeedback('')
                             }}
+                            disabled={createScore.isPending}
                           >
                             Cancel
                           </Button>

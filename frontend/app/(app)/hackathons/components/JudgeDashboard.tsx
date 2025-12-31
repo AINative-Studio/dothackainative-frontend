@@ -4,21 +4,33 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useStore } from '@/lib/store'
-import { Calendar, ArrowRight, FileCheck, Award, CheckCircle } from 'lucide-react'
+import { useHackathons } from '@/hooks/use-hackathons'
+import { useSubmissions } from '@/hooks/use-submissions'
+import { useScores } from '@/hooks/use-scores'
+import { useProjects } from '@/hooks/use-projects'
+import { Calendar, ArrowRight, FileCheck, Award, CheckCircle, Loader2 } from 'lucide-react'
 
 export function JudgeDashboard() {
   const router = useRouter()
-  const { data, getCurrentHackathonStatus } = useStore()
+  const { data: hackathons = [], isLoading: hackathonsLoading } = useHackathons()
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissions()
+  const { data: scores = [], isLoading: scoresLoading } = useScores()
+  const { data: projects = [], isLoading: projectsLoading } = useProjects()
 
-  const uniqueHackathons = Array.from(
-    new Map(data.hackathons.map(h => [h.hackathon_id, h])).values()
-  ).map(h => getCurrentHackathonStatus(h.hackathon_id)!)
+  if (hackathonsLoading || submissionsLoading || scoresLoading || projectsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </div>
+    )
+  }
 
-  const liveHackathons = uniqueHackathons.filter(h => h.status === 'LIVE')
-  const totalSubmissions = data.submissions.length
-  const myScores = data.scores.length
-  const scoredSubmissions = new Set(data.scores.map(s => s.submission_id)).size
+  const liveHackathons = hackathons.filter(h => h.status === 'LIVE')
+  const totalSubmissions = submissions.length
+  const myScores = scores.length
+  const scoredSubmissions = new Set(scores.map(s => s.submission_id)).size
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -124,7 +136,7 @@ export function JudgeDashboard() {
           <CardDescription>Select a hackathon to view and score submissions</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          {uniqueHackathons.length === 0 ? (
+          {hackathons.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
                 <Calendar className="h-8 w-8 text-slate-400" />
@@ -134,15 +146,15 @@ export function JudgeDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {uniqueHackathons.map((hackathon) => {
-                const hackathonSubmissions = data.submissions.filter(s => {
-                  const project = data.projects.find(p => p.project_id === s.project_id)
+              {hackathons.map((hackathon) => {
+                const hackathonSubmissions = submissions.filter(s => {
+                  const project = projects.find(p => p.project_id === s.project_id)
                   return project?.hackathon_id === hackathon.hackathon_id
                 }).length
-                const hackathonScored = data.scores.filter(s => {
-                  const submission = data.submissions.find(sub => sub.submission_id === s.submission_id)
+                const hackathonScored = scores.filter(s => {
+                  const submission = submissions.find(sub => sub.submission_id === s.submission_id)
                   if (!submission) return false
-                  const project = data.projects.find(p => p.project_id === submission.project_id)
+                  const project = projects.find(p => p.project_id === submission.project_id)
                   return project?.hackathon_id === hackathon.hackathon_id
                 }).length
 

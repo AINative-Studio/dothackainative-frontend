@@ -1,22 +1,24 @@
 "use client"
 
-import { useStore } from '@/lib/store'
 import { OrganizerDashboard } from './components/OrganizerDashboard'
 import { BuilderDashboard } from './components/BuilderDashboard'
 import { JudgeDashboard } from './components/JudgeDashboard'
 
 export default function HackathonsPage() {
-  const { data } = useStore()
+  // TODO: Replace with proper auth context when available
+  // For now, default to OrganizerDashboard
+  // Role-based routing will be implemented when auth is integrated
+  const currentRole = 'ORGANIZER' // This should come from auth context
 
-  if (data.currentRole === 'ORGANIZER') {
+  if (currentRole === 'ORGANIZER') {
     return <OrganizerDashboard />
   }
 
-  if (data.currentRole === 'BUILDER') {
+  if (currentRole === 'BUILDER') {
     return <BuilderDashboard />
   }
 
-  if (data.currentRole === 'JUDGE') {
+  if (currentRole === 'JUDGE') {
     return <JudgeDashboard />
   }
 
